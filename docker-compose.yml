@@ -1,0 +1,33 @@
+version: '1'
+services:
+  back:
+    container_name: backend # container name
+    build: back/ # path to the Dockerfile
+    ports:
+      - '6603:3306' # port mapping
+    healthcheck: # Command to check if the container is healthy/ready
+      test:
+        [
+          'CMD',
+          'mysqladmin',
+          'ping',
+          '-h',
+          'localhost',
+          '-u',
+          'root',
+          '-psecret',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  front:
+    container_name: frontend
+    build: front/
+    network_mode: host # use host network, for being able to access the backend
+    ports:
+      - '8080:8080'
+    stdin_open: true # Allows to run the container in interactive mode
+    depends_on:
+      back:
+        condition: service_healthy # Wait for the backend to be healthy/ready, to avoid errors when starting the frontend
